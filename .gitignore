@@ -97,10 +97,5 @@ GTAGS
 __pycache__
 
 # cvitek auto-generated files
-/include/cvitek/cvitek.h
-/include/cvipart.h
-/include/imgs.h
-/include/cvi_board_memmap.h
 tags
 build
-board/cvitek/cvi_board_init.c
