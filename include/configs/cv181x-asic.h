@@ -26,6 +26,7 @@
 #include "cvipart.h"
 #include "cvi_panels/cvi_panel_diffs.h"
 
+#undef ROOTFS_DEV
 // defined in this .h
 #undef CONFIG_BOOTCOMMAND
 
@@ -155,6 +156,7 @@
 #define CONFIG_ENV_SECT_SIZE		0x00040000
 #endif
 
+#define CONFIG_USE_DEFAULT_ENV
 #define CONFIG_ENV_OVERWRITE
 
 #define CONFIG_MMC_UHS_SUPPORT
@@ -180,6 +182,7 @@
 #define CONFIG_NETMASK			255.255.255.0
 #define CONFIG_GATEWAYIP		192.168.0.11
 #define CONFIG_SERVERIP			192.168.56.101
+#define ROOTFS_DEV	"/dev/mmcblk1p2"
 
 #ifdef CONFIG_USE_DEFAULT_ENV
 /* The following Settings are chip dependent */
@@ -197,7 +200,7 @@
 /*******************************************************************************/
 	/* Config FDT_NO */
 	#ifndef USE_HOSTCC
-		#define FDT_NO __stringify(CVICHIP) "_" __stringify(CVIBOARD)
+		#define FDT_NO "cv18xx-openwrt"
 	#else
 		#define FDT_NO ""
 	#endif
@@ -211,7 +214,7 @@
 			#define ROOTARGS "ubi.mtd=ROOTFS ubi.block=0,0"
 		#endif /* CONFIG_SKIP_RAMDISK */
 	#else
-		#define ROOTARGS "rootfstype=squashfs rootwait ro root=" ROOTFS_DEV
+		#define ROOTARGS "rootfstype=ext4 rootwait ro root=" ROOTFS_DEV
 	#endif
 
 	/* BOOTARGS */
@@ -284,18 +287,19 @@
 		#define SHOWLOGOCMD
 	#endif
 
-	#define SET_BOOTARGS "setenv bootargs ${reserved_mem} ${root} ${mtdparts} " \
+	#define SET_BOOTARGS "setenv bootargs ${reserved_mem} ${root} " \
 					"console=$consoledev,$baudrate $othbootargs;"
 
 	#define SD_BOOTM_COMMAND \
 				SET_BOOTARGS \
-				"echo Boot from SD with ramboot.itb;" \
-				"mmc dev 1 && fatload mmc 1 ${uImage_addr} ramboot.itb; " \
+				"echo Boot from SD with boot.sd;" \
+				"mmc dev 1 && fatload mmc 1 ${uImage_addr} boot.sd; " \
 				"if test $? -eq 0; then " \
+				"echo " UBOOT_VBOOT_BOOTM_COMMAND \
 				UBOOT_VBOOT_BOOTM_COMMAND \
 				"fi;"
 
-	#define CONFIG_BOOTCOMMAND	SHOWLOGOCMD "cvi_update || run norboot || run nandboot ||run emmcboot"
+	#define CONFIG_BOOTCOMMAND	SHOWLOGOCMD "run sdboot ||cvi_update || run norboot || run nandboot ||run emmcboot"
 
 	#if defined(CONFIG_NAND_SUPPORT)
 	/* For spi nand boot, need to reset DMA and its setting before exiting uboot */
